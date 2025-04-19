@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# This will extract all the references (their doi) from a given pdf
+
+usage(){
+    [[ $# < 1 ]] && echo "Usage: pdf2alldois <pdf>" && exit 5
+}
+
+init(){
+    PDF=$1
+    # Get paper title from pdf
+    TITLE=$(pdf2title "$PDF")
+    # Get doi using the title
+    DOI=$(title2doi "$TITLE")
+    # Remove spaces and special chars
+    CLEAN_TITLE=$(echo "$TITLE"|sed 's/[^a-zA-Z0-9 ]//g; s/ \+/-/g; s/$//')
+}
+
+get_all_dois(){
+    # From crossref
+    curl "https://api.crossref.org/works/$DOI" > crossref.json 2>/dev/null
+    cat crossref.json|jq -r '.message.reference[]."article-title"'|grep -v "null" > titles
+    cat crossref.json|jq -r '.message.reference[]."DOI"'|grep -v "null" > dois
+    cat titles|xargs -I@ title2doi @ >> dois
+    # From opencitations
+    curl "https://opencitations.net/index/coci/api/v1/references/$DOI" 2>/dev/null|jq -r '.[].cited' >> dois
+    curl "https://opencitations.net/index/coci/api/v1/citations/$DOI" 2>/dev/null|jq -r '.[].citing' >> dois
+    # Clean up
+    sed -i '/^$/d' dois
+    sort -uo doi doi
+}
+
+main(){
+    usage "$1"
+    init "$1"
+    # Create output dir with title name
+    export OUT_DIR=$CLEAN_TITLE
+    mkdir -p $OUT_DIR
+    cp "$PDF" $OUT_DIR
+    cd $OUT_DIR
+    get_all_dois
+    # Remove titles files which is not needed anymore
+    rm titles
+}
+
+main "$1"

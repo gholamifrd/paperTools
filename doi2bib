@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+## Easily get te Bibtex info using DOI
+
+DOI=$1
+[[ $# < 1 ]] && echo "Usage: doi2bib <doi>" && exit 5
+curl -L --connect-timeout 5 \
+    --max-time 10 \
+    --retry 5 \
+    --retry-delay 0 \
+    --retry-max-time 40 \
+    -H "accept: application/x-bibtex" \
+    "http://dx.doi.org/$DOI" 2>/dev/null|sed 's/ @/@/'
+# Create a new line just in case
+echo
+echo

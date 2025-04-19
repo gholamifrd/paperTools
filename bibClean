@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# This script relies heabily on bibtool (http://www.gerd-neugebauer.de/software/TeX/BibTool/)
+# It first cleans some garbage from '.bib' file
+# Then passes the file to bibtool to clean and mark duplicates
+# Finally it removes the duplicates
+
+BIB_FILE=$1
+set -o pipefail
+grep -vE "[><]" "${BIB_FILE}" | sed 's/\@/@/g' | bibtool -q -s -d 2>/dev/null | sed '/^###/,/^}/d'

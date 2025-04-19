@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# This python script converts pdf to md format so that we can manipulate it more easily
+
+if [[ ($@ == "--help") || $@ == "-h" || $# == 0 ]]; then
+  echo "Usage: $(basename $0) <pdf_file>"
+  echo "writes the MD output to stdout"
+  exit 0
+fi
+
+set -o pipefail
+PDF_FILE=$1
+
+pymupdf4llm_pdf_md() {
+  python <<EOF
+import pymupdf4llm
+pdf_file = "${PDF_FILE}"
+md_text = pymupdf4llm.to_markdown(pdf_file, show_progress=False)
+print(md_text)
+EOF
+}
+pymupdf4llm_pdf_md "$@" | awk '{if (!( length($0)<13 && $0 ~ /[- ]/ )) print}' | cat -s
+# pymupdf4llm_pdf_md "$@" | awk '{if (!( length($0)<13 && $0 ~ /[- ]/ )) print}'
+# pymupdf4llm_pdf_md "$@"
