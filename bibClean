@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This script relies heabily on bibtool (http://www.gerd-neugebauer.de/software/TeX/BibTool/)
+# This script relies heavily on bibtool (http://www.gerd-neugebauer.de/software/TeX/BibTool/)
 # It first cleans some garbage from '.bib' file
 # Then passes the file to bibtool to clean and mark duplicates
 # Finally it removes the duplicates
